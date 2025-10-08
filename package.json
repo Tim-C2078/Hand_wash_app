@@ -1,0 +1,12 @@
+{
+  "name": "hand-wash-app",
+  "version": "1.0.0",
+  "description": "Real-time clock with alarm voice announcements",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^30.0.0"
+  }
+}

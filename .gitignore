@@ -1,0 +1,32 @@
+# Node modules
+node_modules/
+
+# Electron build outputs
+dist/
+out/
+build/
+*.log
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Package installers / binaries
+*.exe
+*.dmg
+*.app
+*.deb
+*.snap
+*.AppImage
+
+# Compiled files
+*.asar
+
+# Environment files
+.env
+
+# VSCode settings (optional)
+.vscode/
+
+# Mac specific
+Icon?

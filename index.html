@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Real-Time Clock with Voice Command and Search</title>
+  <link rel="shortcut icon" href="./images/favicon.ico" type="image/x-icon" />
+  <style>
+    button:hover {
+      background-color: orange;
+      border-color: white;
+    }
+    button {
+      margin: 50px;
+      padding: 10px;
+      border-color: orange;
+      border-radius: 30%;
+    }
+    h1 {
+      color: orange;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: seagreen;
+    }
+    #clock {
+      margin-top: 50px;
+      font-size: 6em;
+    }
+  </style>
+</head>
+<body>
+  <h1>Hand Wash APP ⏱⏲</h1>
+  <div id="clock"></div>
+  <button id="btn" onclick="toggleAlarm()">Enable Alarm</button>
+  <label for="volume">Volume: </label>
+  <input type="range" id="volume" min="0" max="1" step="0.1" value="1" />
+  
+  <script>
+    let alarmEnabled = false;
+    let lastSpokenTime = ""; // Prevent duplicate announcements
+
+    function updateClock() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+
+      const currentTime = `${hours}:${minutes}:${seconds}`;
+      document.getElementById('clock').textContent = currentTime;
+
+      if (alarmEnabled && seconds === "00") {
+        // Only trigger once per minute if not already spoken this minute
+        if (lastSpokenTime === currentTime) {
+          return;
+        }
+
+        if (minutes === "30" && seconds === "00" && lastSpokenTime !== currentTime) {
+          playAnnouncement("Hand wash guys! Kindly, wash your hands. Check your, MP and C, Rice tracker and M R D's on all cooked products. Thank you.");
+          lastSpokenTime = currentTime;
+        } else if (hours === "03" && minutes === "00") {
+          playAnnouncement("It's 3 o'clock. Hand wash guys! Kindly, wash your hands. All outgoing team members, please kindly make the necessary handing over, for all the incoming team members. Thank you for your hard work and Goodbye!");
+        } else if (hours === "00" && minutes === "00") {
+          playAnnouncement("Thank you, all for your hard work. Great job team. Goodbye then!");
+          disableAlarm();
+        } else if (hours === "09" && minutes === "00") {
+          // I assume 07 is morning — changed from “57” which makes no sense
+          playAnnouncement("Good morning all. Let's have, a great shift together team.");
+        }
+
+        // After any announcement or decision, mark spoken time
+        lastSpokenTime = currentTime;
+      }
+    }
+
+    function playAnnouncement(message) {
+      alarm();  // play the audio
+      setTimeout(() => {
+        speak(message);
+      }, 2000); // Delay by 2 seconds
+    }
+
+    function speak(text) {
+      // Make sure voices are loaded
+      const voices = speechSynthesis.getVoices();
+      if (!voices || voices.length === 0) {
+        // voices not loaded yet. Wait a short time and try again
+        setTimeout(() => speak(text), 100);
+        return;
+      }
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      const volume = document.getElementById("volume").value;
+      utterance.volume = parseFloat(volume);
+
+      // Choose a male voice if available
+      utterance.voice =
+        voices.find(v => v.name.includes("Google UK English Male")) ||
+        voices.find(v => v.name.includes("Google US English Male")) ||
+        voices.find(v => v.name.toLowerCase().includes("male")) ||
+        voices[0];
+
+      speechSynthesis.cancel();
+      speechSynthesis.speak(utterance);
+    }
+
+    // Ensure voices are loaded before using them
+    speechSynthesis.onvoiceschanged = () => {
+      console.log("Available voices:", speechSynthesis.getVoices());
+    };
+
+    function alarm() {
+      const audio = new Audio('./sounds/annoucement.mp3');
+      audio.play().catch(err => {
+        console.error("Error playing audio:", err);
+      });
+    }
+
+    function enableAlarm() {
+      alarmEnabled = true;
+      alert("Alarm enabled!");
+    }
+
+    function disableAlarm() {
+      alarmEnabled = false;
+      alert("Alarm disabled!");
+    }
+
+    function toggleAlarm() {
+      const btn = document.getElementById('btn');
+      if (btn.textContent === 'Enable Alarm') {
+        enableAlarm();
+        btn.textContent = 'Disable Alarm';
+      } else {
+        disableAlarm();
+        btn.textContent = 'Enable Alarm';
+      }
+    }
+
+    // Start updating the clock
+    updateClock();
+    setInterval(updateClock, 1000);
+  </script>
+</body>
+</html>

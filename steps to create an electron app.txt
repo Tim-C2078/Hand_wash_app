@@ -1,0 +1,42 @@
+npm init -y
+
+npm install electron --save-dev
+
+create a main.js and paste code:
+// main.js
+const { app, BrowserWindow } = require('electron');
+const path = require('path');
+
+function createWindow () {
+  const win = new BrowserWindow({
+    width: 800,
+    height: 600,
+    webPreferences: {
+      nodeIntegration: false, // recommended false
+      contextIsolation: true,
+    }
+  });
+
+  win.loadFile('index.html');
+}
+
+app.whenReady().then(createWindow);
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') app.quit();
+});
+
+and paste code in package.json:
+
+{
+  "name": "hand-wash-app",
+  "version": "1.0.0",
+  "description": "Real-time clock with alarm voice announcements",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^30.0.0"
+  }
+}
