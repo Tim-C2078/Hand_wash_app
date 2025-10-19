@@ -4,9 +4,11 @@
   "description": "Real-time clock with alarm voice announcements",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
-  },
+  "start": "electron .",
+  "package": "electron-packager . \"Handwash App\" --platform=win32 --arch=x64 --out=dist --overwrite --icon=images/favicon.ico"
+},
   "devDependencies": {
-    "electron": "^30.0.0"
+    "electron": "^30.5.1",
+    "electron-packager": "^17.1.2"
   }
 }
