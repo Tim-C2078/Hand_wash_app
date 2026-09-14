@@ -70,8 +70,13 @@
 
         document.getElementById("clock").textContent = currentTime;
 
-        // Only check reminders when alarm is enabled
+        // Alarm is disabled
         if (!alarmEnabled) {
+          return;
+        }
+
+        // Only trigger announcements at exactly :00 seconds
+        if (seconds !== "00") {
           return;
         }
 
@@ -80,62 +85,78 @@
           return;
         }
 
-        // Every scheduled announcement happens at seconds 00
-        if (seconds !== "00") {
-          return;
-        }
+        let announcement = null;
 
-        // Regular hand wash reminder - TESTING AT :30
-        if (minutes === "30") {
-          playAnnouncement(sounds.handWash);
-          lastSpokenTime = currentTime;
+        // ==========================================
+        // 1. SPECIFIC MESSAGES - HIGHEST PRIORITY
+        // ==========================================
+
+        // 00:00 - Goodbye
+        if (hours === "00" && minutes === "00") {
+          announcement = sounds.goodbye;
         }
 
         // 03:00 - Handing over
         else if (hours === "03" && minutes === "00") {
-          playAnnouncement(sounds.handingOver);
-          lastSpokenTime = currentTime;
-        }
-
-        // Even hours at :00 - Focus
-        else if (minutes === "00" && Number(hours) % 2 === 0) {
-          playAnnouncement(sounds.focus);
-          lastSpokenTime = currentTime;
+          announcement = sounds.handingOver;
         }
 
         // 09:00 - Good morning
         else if (hours === "09" && minutes === "00") {
-          playAnnouncement(sounds.goodMorning);
-          lastSpokenTime = currentTime;
+          announcement = sounds.goodMorning;
         }
 
         // 11:00 - Peak period
         else if (hours === "11" && minutes === "00") {
-          playAnnouncement(sounds.peak);
-          lastSpokenTime = currentTime;
+          announcement = sounds.peak;
         }
 
-        // 00:00 - Goodbye
-        else if (hours === "00" && minutes === "00") {
-          playAnnouncement(sounds.goodbye);
+        // ==========================================
+        // 2. FOCUS - EVERY 2 HOURS
+        // ==========================================
+        else if (minutes === "00" && Number(hours) % 2 === 0) {
+          announcement = sounds.focus;
+        }
+
+        // ==========================================
+        // 3. HAND WASH - EVERY 30 MINUTES
+        // ==========================================
+        else if (minutes === "00" || minutes === "30") {
+          announcement = sounds.handWash;
+        }
+
+        // ==========================================
+        // PLAY ANNOUNCEMENT
+        // ==========================================
+
+        if (announcement) {
           lastSpokenTime = currentTime;
 
+          playAnnouncement(announcement);
+        }
+
+        // Disable alarm after midnight goodbye
+        if (hours === "00" && minutes === "00") {
           setTimeout(() => {
             disableAlarm();
           }, 3000);
         }
       }
 
+      // ==========================================
+      // PLAY CHIME THEN ELEVENLABS RECORDING
+      // ==========================================
+
       function playAnnouncement(voiceFile) {
         const volume = parseFloat(document.getElementById("volume").value);
 
-        // First play the announcement/chime
+        // Play announcement/chime first
         const alertSound = new Audio("./sounds/annoucement.mp3");
 
         alertSound.volume = volume;
 
+        // When chime finishes, play recorded voice
         alertSound.addEventListener("ended", () => {
-          // After chime finishes, play ElevenLabs recording
           const voice = new Audio(voiceFile);
 
           voice.volume = volume;
@@ -145,20 +166,37 @@
           });
         });
 
+        // Play chime
         alertSound.play().catch((err) => {
           console.error("Could not play announcement sound:", err);
         });
       }
+
+      // ==========================================
+      // ENABLE ALARM
+      // ==========================================
 
       function enableAlarm() {
         alarmEnabled = true;
         alert("Alarm enabled!");
       }
 
+      // ==========================================
+      // DISABLE ALARM
+      // ==========================================
+
       function disableAlarm() {
         alarmEnabled = false;
+
+        const btn = document.getElementById("btn");
+        btn.textContent = "Enable Alarm";
+
         alert("Alarm disabled!");
       }
+
+      // ==========================================
+      // TOGGLE ALARM
+      // ==========================================
 
       function toggleAlarm() {
         const btn = document.getElementById("btn");
@@ -168,12 +206,15 @@
           btn.textContent = "Disable Alarm";
         } else {
           disableAlarm();
-          btn.textContent = "Enable Alarm";
         }
       }
 
-      // Start clock
+      // ==========================================
+      // START CLOCK
+      // ==========================================
+
       updateClock();
+
       setInterval(updateClock, 1000);
     </script>
   </body>
